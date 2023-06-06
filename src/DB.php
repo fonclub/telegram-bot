@@ -418,7 +418,7 @@ class DB
                 (id, is_bot, username, first_name, last_name, language_code, is_premium, added_to_attachment_menu, created_at, updated_at)
                 VALUES
                 (:id, :is_bot, :username, :first_name, :last_name, :language_code, :is_premium, :added_to_attachment_menu, :created_at, :updated_at)
-                ON DUPLICATE KEY UPDATE
+                ON CONFLICT (id) DO UPDATE SET
                     is_bot                   = VALUES(is_bot),
                     username                 = VALUES(username),
                     first_name               = VALUES(first_name),
@@ -490,7 +490,7 @@ class DB
                 (id, type, title, username, first_name, last_name, is_forum, created_at ,updated_at, old_id)
                 VALUES
                 (:id, :type, :title, :username, :first_name, :last_name, :is_forum, :created_at, :updated_at, :old_id)
-                ON DUPLICATE KEY UPDATE
+                ON CONFLICT (id) DO UPDATE SET
                     type                           = VALUES(type),
                     title                          = VALUES(title),
                     username                       = VALUES(username),
@@ -878,7 +878,7 @@ class DB
                 (id, question, options, total_voter_count, is_closed, is_anonymous, type, allows_multiple_answers, correct_option_id, explanation, explanation_entities, open_period, close_date, created_at)
                 VALUES
                 (:id, :question, :options, :total_voter_count, :is_closed, :is_anonymous, :type, :allows_multiple_answers, :correct_option_id, :explanation, :explanation_entities, :open_period, :close_date, :created_at)
-                ON DUPLICATE KEY UPDATE
+                ON CONFLICT (id) DO UPDATE SET
                     options                 = VALUES(options),
                     total_voter_count       = VALUES(total_voter_count),
                     is_closed               = VALUES(is_closed),
@@ -933,7 +933,7 @@ class DB
                 (poll_id, user_id, option_ids, created_at)
                 VALUES
                 (:poll_id, :user_id, :option_ids, :created_at)
-                ON DUPLICATE KEY UPDATE
+                ON CONFLICT (poll_id, user_id) DO UPDATE SET
                     option_ids = VALUES(option_ids)
             ');
 
