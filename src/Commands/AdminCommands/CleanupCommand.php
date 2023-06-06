@@ -404,8 +404,6 @@ class CleanupCommand extends AdminCommand
             $pdo->beginTransaction();
 
             foreach ($queries as $query) {
-                // Delete in chunks to not block / improve speed on big tables.
-                $query .= ' LIMIT 10000';
                 while ($dbq = $pdo->query($query)) {
                     if ($dbq->rowCount() === 0) {
                         continue 2;
