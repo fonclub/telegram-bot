@@ -26,6 +26,11 @@
             "name": "PHP Telegram Bot Team",
             "homepage": "https://github.com/php-telegram-bot/core/graphs/contributors",
             "role": "Developer"
+        },
+        {
+            "name": "Fonclub",
+            "homepage": "https://t.me/fonclub",
+            "role": "Developer"
         }
     ],
     "require": {
@@ -72,10 +77,5 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "process-timeout": 3600
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-develop": "0.81.x-dev"
-        }
     }
 }
