@@ -419,14 +419,14 @@ class DB
                 VALUES
                 (:id, :is_bot, :username, :first_name, :last_name, :language_code, :is_premium, :added_to_attachment_menu, :created_at, :updated_at)
                 ON CONFLICT (id) DO UPDATE SET
-                    is_bot                   = VALUES(is_bot),
-                    username                 = VALUES(username),
-                    first_name               = VALUES(first_name),
-                    last_name                = VALUES(last_name),
-                    language_code            = VALUES(language_code),
-                    is_premium               = VALUES(is_premium),
-                    added_to_attachment_menu = VALUES(added_to_attachment_menu),
-                    updated_at               = VALUES(updated_at)
+                    is_bot                   = EXCLUDED.is_bot,
+                    username                 = EXCLUDED.username,
+                    first_name               = EXCLUDED.first_name,
+                    last_name                = EXCLUDED.last_name,
+                    language_code            = EXCLUDED.language_code,
+                    is_premium               = EXCLUDED.is_premium,
+                    added_to_attachment_menu = EXCLUDED.added_to_attachment_menu,
+                    updated_at               = EXCLUDED.updated_at
             ');
 
             $sth->bindValue(':id', $user->getId());
@@ -491,13 +491,13 @@ class DB
                 VALUES
                 (:id, :type, :title, :username, :first_name, :last_name, :is_forum, :created_at, :updated_at, :old_id)
                 ON CONFLICT (id) DO UPDATE SET
-                    type                           = VALUES(type),
-                    title                          = VALUES(title),
-                    username                       = VALUES(username),
-                    first_name                     = VALUES(first_name),
-                    last_name                      = VALUES(last_name),
-                    is_forum                       = VALUES(is_forum),
-                    updated_at                     = VALUES(updated_at)
+                    type                           = EXCLUDED.type,
+                    title                          = EXCLUDED.title,
+                    username                       = EXCLUDED.username,
+                    first_name                     = EXCLUDED.first_name,
+                    last_name                      = EXCLUDED.last_name,
+                    is_forum                       = EXCLUDED.is_forum,
+                    updated_at                     = EXCLUDED.updated_at
             ');
 
             $chat_id   = $chat->getId();
@@ -879,17 +879,17 @@ class DB
                 VALUES
                 (:id, :question, :options, :total_voter_count, :is_closed, :is_anonymous, :type, :allows_multiple_answers, :correct_option_id, :explanation, :explanation_entities, :open_period, :close_date, :created_at)
                 ON CONFLICT (id) DO UPDATE SET
-                    options                 = VALUES(options),
-                    total_voter_count       = VALUES(total_voter_count),
-                    is_closed               = VALUES(is_closed),
-                    is_anonymous            = VALUES(is_anonymous),
-                    type                    = VALUES(type),
-                    allows_multiple_answers = VALUES(allows_multiple_answers),
-                    correct_option_id       = VALUES(correct_option_id),
-                    explanation             = VALUES(explanation),
-                    explanation_entities    = VALUES(explanation_entities),
-                    open_period             = VALUES(open_period),
-                    close_date              = VALUES(close_date)
+                    options                 = EXCLUDED.options,
+                    total_voter_count       = EXCLUDED.total_voter_count,
+                    is_closed               = EXCLUDED.is_closed,
+                    is_anonymous            = EXCLUDED.is_anonymous,
+                    type                    = EXCLUDED.type,
+                    allows_multiple_answers = EXCLUDED.allows_multiple_answers,
+                    correct_option_id       = EXCLUDED.correct_option_id,
+                    explanation             = EXCLUDED.explanation,
+                    explanation_entities    = EXCLUDED.explanation_entities,
+                    open_period             = EXCLUDED.open_period,
+                    close_date              = EXCLUDED.close_date
             ');
 
             $sth->bindValue(':id', $poll->getId());
@@ -934,7 +934,7 @@ class DB
                 VALUES
                 (:poll_id, :user_id, :option_ids, :created_at)
                 ON CONFLICT (poll_id, user_id) DO UPDATE SET
-                    option_ids = VALUES(option_ids)
+                    option_ids = EXCLUDED.option_ids
             ');
 
             $date    = self::getTimestamp();
