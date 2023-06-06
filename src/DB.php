@@ -454,6 +454,7 @@ class DB
                     (user_id, chat_id)
                     VALUES
                     (:user_id, :chat_id)
+                    ON CONFLICT (user_id, chat_id) DO NOTHING;
                 ');
 
                 $sth->bindValue(':user_id', $user->getId());
