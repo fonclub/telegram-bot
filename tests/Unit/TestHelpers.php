@@ -238,14 +238,14 @@ class TestHelpers
 
         $pdo = new \PDO($dsn, $credentials['user'], $credentials['password'], $options);
         $pdo->prepare('
-            DELETE FROM `conversation`;
-            DELETE FROM `telegram_update`;
-            DELETE FROM `chosen_inline_result`;
-            DELETE FROM `inline_query`;
-            DELETE FROM `message`;
-            DELETE FROM `user_chat`;
-            DELETE FROM `chat`;
-            DELETE FROM `user`;
+            DELETE FROM conversation;
+            DELETE FROM telegram_update;
+            DELETE FROM chosen_inline_result;
+            DELETE FROM inline_query;
+            DELETE FROM message;
+            DELETE FROM user_chat;
+            DELETE FROM chat;
+            DELETE FROM user;
         ')->execute();
     }
 }

@@ -31,7 +31,7 @@ $mysql_credentials = [
 
 try {
     // Create dummy Telegram API object and connect to MySQL database.
-    (new Telegram('1:A'))->enableMySql($mysql_credentials);
+    (new Telegram('1:A'))->enableDb($mysql_credentials);
 
     // Load the updates log file to iterate over.
     $updates_log_file = new SplFileObject($updates_log_file_path);

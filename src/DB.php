@@ -32,7 +32,7 @@ use PDOException;
 class DB
 {
     /**
-     * MySQL credentials
+     * DB credentials
      *
      * @var array
      */
@@ -73,26 +73,20 @@ class DB
     public static function initialize(
         array $credentials,
         Telegram $telegram,
-        $table_prefix = '',
-        $encoding = 'utf8mb4'
+        $table_prefix = ''
     ): PDO {
         if (empty($credentials)) {
-            throw new TelegramException('MySQL credentials not provided!');
+            throw new TelegramException('DB credentials not provided!');
         }
-        if (isset($credentials['unix_socket'])) {
-            $dsn = 'mysql:unix_socket=' . $credentials['unix_socket'];
-        } else {
-            $dsn = 'mysql:host=' . $credentials['host'];
-        }
-        $dsn .= ';dbname=' . $credentials['database'];
+        
+        $dsn = 'pgsql:host=' . $credentials['host'].';dbname=' . $credentials['database'];
 
         if (!empty($credentials['port'])) {
             $dsn .= ';port=' . $credentials['port'];
         }
 
-        $options = [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . $encoding];
         try {
-            $pdo = new PDO($dsn, $credentials['user'], $credentials['password'], $options);
+            $pdo = new PDO($dsn, $credentials['user'], $credentials['password'], []);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         } catch (PDOException $e) {
             throw new TelegramException($e->getMessage());
@@ -126,7 +120,7 @@ class DB
         string $table_prefix = ''
     ): PDO {
         if ($external_pdo_connection === null) {
-            throw new TelegramException('MySQL external connection not provided!');
+            throw new TelegramException('DB external connection not provided!');
         }
 
         self::$pdo               = $external_pdo_connection;
@@ -165,7 +159,7 @@ class DB
         foreach ($tables as $table) {
             $table_name = 'TB_' . strtoupper($table);
             if (!defined($table_name)) {
-                define($table_name, self::$table_prefix . $table);
+                define($table_name, sprintf('"%s"', self::$table_prefix . $table));
             }
         }
     }
@@ -207,14 +201,14 @@ class DB
 
         try {
             $sql = '
-                SELECT `id`
-                FROM `' . TB_TELEGRAM_UPDATE . '`
+                SELECT id
+                FROM ' . TB_TELEGRAM_UPDATE . '
             ';
 
             if ($id !== '') {
-                $sql .= ' WHERE `id` = :id';
+                $sql .= ' WHERE id = :id';
             } else {
-                $sql .= ' ORDER BY `id` DESC';
+                $sql .= ' ORDER BY id DESC';
             }
 
             if ($limit > 0) {
@@ -255,8 +249,8 @@ class DB
         try {
             $sql = '
                 SELECT *
-                FROM `' . TB_MESSAGE . '`
-                ORDER BY `id` DESC
+                FROM ' . TB_MESSAGE . '
+                ORDER BY id DESC
             ';
 
             if ($limit > 0) {
@@ -363,13 +357,13 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_TELEGRAM_UPDATE . '`
+                INSERT IGNORE INTO ' . TB_TELEGRAM_UPDATE . '
                 (
-                    `id`, `chat_id`, `message_id`, `edited_message_id`,
-                    `channel_post_id`, `edited_channel_post_id`, `inline_query_id`, `chosen_inline_result_id`,
-                    `callback_query_id`, `shipping_query_id`, `pre_checkout_query_id`,
-                    `poll_id`, `poll_answer_poll_id`, `my_chat_member_updated_id`, `chat_member_updated_id`,
-                    `chat_join_request_id`
+                    id, chat_id, message_id, edited_message_id,
+                    channel_post_id, edited_channel_post_id, inline_query_id, chosen_inline_result_id,
+                    callback_query_id, shipping_query_id, pre_checkout_query_id,
+                    poll_id, poll_answer_poll_id, my_chat_member_updated_id, chat_member_updated_id,
+                    chat_join_request_id
                 ) VALUES (
                     :id, :chat_id, :message_id, :edited_message_id,
                     :channel_post_id, :edited_channel_post_id, :inline_query_id, :chosen_inline_result_id,
@@ -420,19 +414,19 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT INTO `' . TB_USER . '`
-                (`id`, `is_bot`, `username`, `first_name`, `last_name`, `language_code`, `is_premium`, `added_to_attachment_menu`, `created_at`, `updated_at`)
+                INSERT INTO ' . TB_USER . '
+                (id, is_bot, username, first_name, last_name, language_code, is_premium, added_to_attachment_menu, created_at, updated_at)
                 VALUES
                 (:id, :is_bot, :username, :first_name, :last_name, :language_code, :is_premium, :added_to_attachment_menu, :created_at, :updated_at)
                 ON DUPLICATE KEY UPDATE
-                    `is_bot`                   = VALUES(`is_bot`),
-                    `username`                 = VALUES(`username`),
-                    `first_name`               = VALUES(`first_name`),
-                    `last_name`                = VALUES(`last_name`),
-                    `language_code`            = VALUES(`language_code`),
-                    `is_premium`               = VALUES(`is_premium`),
-                    `added_to_attachment_menu` = VALUES(`added_to_attachment_menu`),
-                    `updated_at`               = VALUES(`updated_at`)
+                    is_bot                   = VALUES(is_bot),
+                    username                 = VALUES(username),
+                    first_name               = VALUES(first_name),
+                    last_name                = VALUES(last_name),
+                    language_code            = VALUES(language_code),
+                    is_premium               = VALUES(is_premium),
+                    added_to_attachment_menu = VALUES(added_to_attachment_menu),
+                    updated_at               = VALUES(updated_at)
             ');
 
             $sth->bindValue(':id', $user->getId());
@@ -456,8 +450,8 @@ class DB
         if ($chat) {
             try {
                 $sth = self::$pdo->prepare('
-                    INSERT IGNORE INTO `' . TB_USER_CHAT . '`
-                    (`user_id`, `chat_id`)
+                    INSERT IGNORE INTO ' . TB_USER_CHAT . '
+                    (user_id, chat_id)
                     VALUES
                     (:user_id, :chat_id)
                 ');
@@ -492,18 +486,18 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_CHAT . '`
-                (`id`, `type`, `title`, `username`, `first_name`, `last_name`, `is_forum`, `created_at` ,`updated_at`, `old_id`)
+                INSERT IGNORE INTO ' . TB_CHAT . '
+                (id, type, title, username, first_name, last_name, is_forum, created_at ,updated_at, old_id)
                 VALUES
                 (:id, :type, :title, :username, :first_name, :last_name, :is_forum, :created_at, :updated_at, :old_id)
                 ON DUPLICATE KEY UPDATE
-                    `type`                           = VALUES(`type`),
-                    `title`                          = VALUES(`title`),
-                    `username`                       = VALUES(`username`),
-                    `first_name`                     = VALUES(`first_name`),
-                    `last_name`                      = VALUES(`last_name`),
-                    `is_forum`                       = VALUES(`is_forum`),
-                    `updated_at`                     = VALUES(`updated_at`)
+                    type                           = VALUES(type),
+                    title                          = VALUES(title),
+                    username                       = VALUES(username),
+                    first_name                     = VALUES(first_name),
+                    last_name                      = VALUES(last_name),
+                    is_forum                       = VALUES(is_forum),
+                    updated_at                     = VALUES(updated_at)
             ');
 
             $chat_id   = $chat->getId();
@@ -639,8 +633,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_INLINE_QUERY . '`
-                (`id`, `user_id`, `location`, `query`, `offset`, `chat_type`, `created_at`)
+                INSERT IGNORE INTO ' . TB_INLINE_QUERY . '
+                (id, user_id, location, query, offset, chat_type, created_at)
                 VALUES
                 (:id, :user_id, :location, :query, :offset, :chat_type, :created_at)
             ');
@@ -683,8 +677,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT INTO `' . TB_CHOSEN_INLINE_RESULT . '`
-                (`result_id`, `user_id`, `location`, `inline_message_id`, `query`, `created_at`)
+                INSERT INTO ' . TB_CHOSEN_INLINE_RESULT . '
+                (result_id, user_id, location, inline_message_id, query, created_at)
                 VALUES
                 (:result_id, :user_id, :location, :inline_message_id, :query, :created_at)
             ');
@@ -726,8 +720,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_CALLBACK_QUERY . '`
-                (`id`, `user_id`, `chat_id`, `message_id`, `inline_message_id`, `chat_instance`, `data`, `game_short_name`, `created_at`)
+                INSERT IGNORE INTO ' . TB_CALLBACK_QUERY . '
+                (id, user_id, chat_id, message_id, inline_message_id, chat_instance, data, game_short_name, created_at)
                 VALUES
                 (:id, :user_id, :chat_id, :message_id, :inline_message_id, :chat_instance, :data, :game_short_name, :created_at)
             ');
@@ -748,9 +742,9 @@ class DB
 
                 $is_message = self::$pdo->query('
                     SELECT *
-                    FROM `' . TB_MESSAGE . '`
-                    WHERE `id` = ' . $message_id . '
-                      AND `chat_id` = ' . $chat_id . '
+                    FROM ' . TB_MESSAGE . '
+                    WHERE id = ' . $message_id . '
+                      AND chat_id = ' . $chat_id . '
                     LIMIT 1
                 ')->rowCount();
 
@@ -793,8 +787,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_SHIPPING_QUERY . '`
-                (`id`, `user_id`, `invoice_payload`, `shipping_address`, `created_at`)
+                INSERT IGNORE INTO ' . TB_SHIPPING_QUERY . '
+                (id, user_id, invoice_payload, shipping_address, created_at)
                 VALUES
                 (:id, :user_id, :invoice_payload, :shipping_address, :created_at)
             ');
@@ -835,8 +829,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_PRE_CHECKOUT_QUERY . '`
-                (`id`, `user_id`, `currency`, `total_amount`, `invoice_payload`, `shipping_option_id`, `order_info`, `created_at`)
+                INSERT IGNORE INTO ' . TB_PRE_CHECKOUT_QUERY . '
+                (id, user_id, currency, total_amount, invoice_payload, shipping_option_id, order_info, created_at)
                 VALUES
                 (:id, :user_id, :currency, :total_amount, :invoice_payload, :shipping_option_id, :order_info, :created_at)
             ');
@@ -880,22 +874,22 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT INTO `' . TB_POLL . '`
-                (`id`, `question`, `options`, `total_voter_count`, `is_closed`, `is_anonymous`, `type`, `allows_multiple_answers`, `correct_option_id`, `explanation`, `explanation_entities`, `open_period`, `close_date`, `created_at`)
+                INSERT INTO ' . TB_POLL . '
+                (id, question, options, total_voter_count, is_closed, is_anonymous, type, allows_multiple_answers, correct_option_id, explanation, explanation_entities, open_period, close_date, created_at)
                 VALUES
                 (:id, :question, :options, :total_voter_count, :is_closed, :is_anonymous, :type, :allows_multiple_answers, :correct_option_id, :explanation, :explanation_entities, :open_period, :close_date, :created_at)
                 ON DUPLICATE KEY UPDATE
-                    `options`                 = VALUES(`options`),
-                    `total_voter_count`       = VALUES(`total_voter_count`),
-                    `is_closed`               = VALUES(`is_closed`),
-                    `is_anonymous`            = VALUES(`is_anonymous`),
-                    `type`                    = VALUES(`type`),
-                    `allows_multiple_answers` = VALUES(`allows_multiple_answers`),
-                    `correct_option_id`       = VALUES(`correct_option_id`),
-                    `explanation`             = VALUES(`explanation`),
-                    `explanation_entities`    = VALUES(`explanation_entities`),
-                    `open_period`             = VALUES(`open_period`),
-                    `close_date`              = VALUES(`close_date`)
+                    options                 = VALUES(options),
+                    total_voter_count       = VALUES(total_voter_count),
+                    is_closed               = VALUES(is_closed),
+                    is_anonymous            = VALUES(is_anonymous),
+                    type                    = VALUES(type),
+                    allows_multiple_answers = VALUES(allows_multiple_answers),
+                    correct_option_id       = VALUES(correct_option_id),
+                    explanation             = VALUES(explanation),
+                    explanation_entities    = VALUES(explanation_entities),
+                    open_period             = VALUES(open_period),
+                    close_date              = VALUES(close_date)
             ');
 
             $sth->bindValue(':id', $poll->getId());
@@ -935,12 +929,12 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT INTO `' . TB_POLL_ANSWER . '`
-                (`poll_id`, `user_id`, `option_ids`, `created_at`)
+                INSERT INTO ' . TB_POLL_ANSWER . '
+                (poll_id, user_id, option_ids, created_at)
                 VALUES
                 (:poll_id, :user_id, :option_ids, :created_at)
                 ON DUPLICATE KEY UPDATE
-                    `option_ids` = VALUES(`option_ids`)
+                    option_ids = VALUES(option_ids)
             ');
 
             $date    = self::getTimestamp();
@@ -978,8 +972,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT INTO `' . TB_CHAT_MEMBER_UPDATED . '`
-                (`chat_id`, `user_id`, `date`, `old_chat_member`, `new_chat_member`, `invite_link`, `created_at`)
+                INSERT INTO ' . TB_CHAT_MEMBER_UPDATED . '
+                (chat_id, user_id, date, old_chat_member, new_chat_member, invite_link, created_at)
                 VALUES
                 (:chat_id, :user_id, :date, :old_chat_member, :new_chat_member, :invite_link, :created_at)
             ');
@@ -1027,8 +1021,8 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT INTO `' . TB_CHAT_JOIN_REQUEST . '`
-                (`chat_id`, `user_id`, `date`, `bio`, `invite_link`, `created_at`)
+                INSERT INTO ' . TB_CHAT_JOIN_REQUEST . '
+                (chat_id, user_id, date, bio, invite_link, created_at)
                 VALUES
                 (:chat_id, :user_id, :date, :bio, :invite_link, :created_at)
             ');
@@ -1131,18 +1125,18 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_MESSAGE . '`
+                INSERT IGNORE INTO ' . TB_MESSAGE . '
                 (
-                    `id`, `user_id`, `chat_id`, `message_thread_id`, `sender_chat_id`, `date`, `forward_from`, `forward_from_chat`, `forward_from_message_id`,
-                    `forward_signature`, `forward_sender_name`, `forward_date`, `is_topic_message`,
-                    `reply_to_chat`, `reply_to_message`, `via_bot`, `edit_date`, `media_group_id`, `author_signature`, `text`, `entities`, `caption_entities`,
-                    `audio`, `document`, `animation`, `game`, `photo`, `sticker`, `video`, `voice`, `video_note`, `caption`, `has_media_spoiler`, `contact`,
-                    `location`, `venue`, `poll`, `dice`, `new_chat_members`, `left_chat_member`,
-                    `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
-                    `supergroup_chat_created`, `channel_chat_created`, `message_auto_delete_timer_changed`, `migrate_to_chat_id`, `migrate_from_chat_id`,
-                    `pinned_message`, `invoice`, `successful_payment`, `user_shared`, `chat_shared`, `connected_website`, `write_access_allowed`, `passport_data`, `proximity_alert_triggered`,
-                    `forum_topic_created`, `forum_topic_edited`, `forum_topic_closed`, `forum_topic_reopened`, `general_forum_topic_hidden`, `general_forum_topic_unhidden`,
-                    `video_chat_scheduled`, `video_chat_started`, `video_chat_ended`, `video_chat_participants_invited`, `web_app_data`, `reply_markup`
+                    id, user_id, chat_id, message_thread_id, sender_chat_id, date, forward_from, forward_from_chat, forward_from_message_id,
+                    forward_signature, forward_sender_name, forward_date, is_topic_message,
+                    reply_to_chat, reply_to_message, via_bot, edit_date, media_group_id, author_signature, text, entities, caption_entities,
+                    audio, document, animation, game, photo, sticker, video, voice, video_note, caption, has_media_spoiler, contact,
+                    location, venue, poll, dice, new_chat_members, left_chat_member,
+                    new_chat_title, new_chat_photo, delete_chat_photo, group_chat_created,
+                    supergroup_chat_created, channel_chat_created, message_auto_delete_timer_changed, migrate_to_chat_id, migrate_from_chat_id,
+                    pinned_message, invoice, successful_payment, user_shared, chat_shared, connected_website, write_access_allowed, passport_data, proximity_alert_triggered,
+                    forum_topic_created, forum_topic_edited, forum_topic_closed, forum_topic_reopened, general_forum_topic_hidden, general_forum_topic_unhidden,
+                    video_chat_scheduled, video_chat_started, video_chat_ended, video_chat_participants_invited, web_app_data, reply_markup
                 ) VALUES (
                     :message_id, :user_id, :chat_id, :message_thread_id, :sender_chat_id, :date, :forward_from, :forward_from_chat, :forward_from_message_id,
                     :forward_signature, :forward_sender_name, :forward_date, :is_topic_message,
@@ -1278,8 +1272,8 @@ class DB
             }
 
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO `' . TB_EDITED_MESSAGE . '`
-                (`chat_id`, `message_id`, `user_id`, `edit_date`, `text`, `entities`, `caption`)
+                INSERT IGNORE INTO ' . TB_EDITED_MESSAGE . '
+                (chat_id, message_id, user_id, edit_date, text, entities, caption)
                 VALUES
                 (:chat_id, :message_id, :user_id, :edit_date, :text, :entities, :caption)
             ');
@@ -1334,20 +1328,20 @@ class DB
         try {
             $query = '
                 SELECT * ,
-                ' . TB_CHAT . '.`id` AS `chat_id`,
-                ' . TB_CHAT . '.`username` AS `chat_username`,
-                ' . TB_CHAT . '.`created_at` AS `chat_created_at`,
-                ' . TB_CHAT . '.`updated_at` AS `chat_updated_at`
+                ' . TB_CHAT . '.id AS chat_id,
+                ' . TB_CHAT . '.username AS chat_username,
+                ' . TB_CHAT . '.created_at AS chat_created_at,
+                ' . TB_CHAT . '.updated_at AS chat_updated_at
             ';
             if ($select['users']) {
                 $query .= '
-                    , ' . TB_USER . '.`id` AS `user_id`
-                    FROM `' . TB_CHAT . '`
-                    LEFT JOIN `' . TB_USER . '`
-                    ON ' . TB_CHAT . '.`id`=' . TB_USER . '.`id`
+                    , ' . TB_USER . '.id AS user_id
+                    FROM ' . TB_CHAT . '
+                    LEFT JOIN ' . TB_USER . '
+                    ON ' . TB_CHAT . '.id=' . TB_USER . '.id
                 ';
             } else {
-                $query .= 'FROM `' . TB_CHAT . '`';
+                $query .= 'FROM ' . TB_CHAT . '';
             }
 
             // Building parts of query
@@ -1357,31 +1351,31 @@ class DB
             if (!$select['groups'] || !$select['users'] || !$select['supergroups'] || !$select['channels']) {
                 $chat_or_user = [];
 
-                $select['groups'] && $chat_or_user[] = TB_CHAT . '.`type` = "group"';
-                $select['supergroups'] && $chat_or_user[] = TB_CHAT . '.`type` = "supergroup"';
-                $select['channels'] && $chat_or_user[] = TB_CHAT . '.`type` = "channel"';
-                $select['users'] && $chat_or_user[] = TB_CHAT . '.`type` = "private"';
+                $select['groups'] && $chat_or_user[] = TB_CHAT . '.type = "group"';
+                $select['supergroups'] && $chat_or_user[] = TB_CHAT . '.type = "supergroup"';
+                $select['channels'] && $chat_or_user[] = TB_CHAT . '.type = "channel"';
+                $select['users'] && $chat_or_user[] = TB_CHAT . '.type = "private"';
 
                 $where[] = '(' . implode(' OR ', $chat_or_user) . ')';
             }
 
             if (null !== $select['date_from']) {
-                $where[]              = TB_CHAT . '.`updated_at` >= :date_from';
+                $where[]              = TB_CHAT . '.updated_at >= :date_from';
                 $tokens[':date_from'] = $select['date_from'];
             }
 
             if (null !== $select['date_to']) {
-                $where[]            = TB_CHAT . '.`updated_at` <= :date_to';
+                $where[]            = TB_CHAT . '.updated_at <= :date_to';
                 $tokens[':date_to'] = $select['date_to'];
             }
 
             if (null !== $select['chat_id']) {
-                $where[]            = TB_CHAT . '.`id` = :chat_id';
+                $where[]            = TB_CHAT . '.id = :chat_id';
                 $tokens[':chat_id'] = $select['chat_id'];
             }
 
             if ($select['users'] && null !== $select['language']) {
-                $where[]             = TB_USER . '.`language_code` = :language';
+                $where[]             = TB_USER . '.language_code = :language';
                 $tokens[':language'] = $select['language'];
             }
 
@@ -1389,17 +1383,17 @@ class DB
                 $text_like = '%' . strtolower($select['text']) . '%';
                 if ($select['users']) {
                     $where[]          = '(
-                        LOWER(' . TB_CHAT . '.`title`) LIKE :text1
-                        OR LOWER(' . TB_USER . '.`first_name`) LIKE :text2
-                        OR LOWER(' . TB_USER . '.`last_name`) LIKE :text3
-                        OR LOWER(' . TB_USER . '.`username`) LIKE :text4
+                        LOWER(' . TB_CHAT . '.title) LIKE :text1
+                        OR LOWER(' . TB_USER . '.first_name) LIKE :text2
+                        OR LOWER(' . TB_USER . '.last_name) LIKE :text3
+                        OR LOWER(' . TB_USER . '.username) LIKE :text4
                     )';
                     $tokens[':text1'] = $text_like;
                     $tokens[':text2'] = $text_like;
                     $tokens[':text3'] = $text_like;
                     $tokens[':text4'] = $text_like;
                 } else {
-                    $where[]         = 'LOWER(' . TB_CHAT . '.`title`) LIKE :text';
+                    $where[]         = 'LOWER(' . TB_CHAT . '.title) LIKE :text';
                     $tokens[':text'] = $text_like;
                 }
             }
@@ -1408,7 +1402,7 @@ class DB
                 $query .= ' WHERE ' . implode(' AND ', $where);
             }
 
-            $query .= ' ORDER BY ' . TB_CHAT . '.`updated_at` ASC';
+            $query .= ' ORDER BY ' . TB_CHAT . '.updated_at ASC';
 
             $sth = self::$pdo->prepare($query);
             $sth->execute($tokens);
@@ -1436,9 +1430,9 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('SELECT
-                (SELECT COUNT(DISTINCT `chat_id`) FROM `' . TB_REQUEST_LIMITER . '` WHERE `created_at` >= :created_at_1) AS LIMIT_PER_SEC_ALL,
-                (SELECT COUNT(*) FROM `' . TB_REQUEST_LIMITER . '` WHERE `created_at` >= :created_at_2 AND ((`chat_id` = :chat_id_1 AND `inline_message_id` IS NULL) OR (`inline_message_id` = :inline_message_id AND `chat_id` IS NULL))) AS LIMIT_PER_SEC,
-                (SELECT COUNT(*) FROM `' . TB_REQUEST_LIMITER . '` WHERE `created_at` >= :created_at_minute AND `chat_id` = :chat_id_2) AS LIMIT_PER_MINUTE
+                (SELECT COUNT(DISTINCT chat_id) FROM ' . TB_REQUEST_LIMITER . ' WHERE created_at >= :created_at_1) AS LIMIT_PER_SEC_ALL,
+                (SELECT COUNT(*) FROM ' . TB_REQUEST_LIMITER . ' WHERE created_at >= :created_at_2 AND ((chat_id = :chat_id_1 AND inline_message_id IS NULL) OR (inline_message_id = :inline_message_id AND chat_id IS NULL))) AS LIMIT_PER_SEC,
+                (SELECT COUNT(*) FROM ' . TB_REQUEST_LIMITER . ' WHERE created_at >= :created_at_minute AND chat_id = :chat_id_2) AS LIMIT_PER_MINUTE
             ');
 
             $date        = self::getTimestamp();
@@ -1475,8 +1469,8 @@ class DB
         }
 
         try {
-            $sth = self::$pdo->prepare('INSERT INTO `' . TB_REQUEST_LIMITER . '`
-                (`method`, `chat_id`, `inline_message_id`, `created_at`)
+            $sth = self::$pdo->prepare('INSERT INTO ' . TB_REQUEST_LIMITER . '
+                (method, chat_id, inline_message_id, created_at)
                 VALUES
                 (:method, :chat_id, :inline_message_id, :created_at);
             ');
@@ -1518,18 +1512,18 @@ class DB
             // Fields with values to update
             foreach ($fields_values as $field => $value) {
                 $token          = ':' . count($tokens);
-                $fields[]       = "`{$field}` = {$token}";
+                $fields[]       = "{$field} = {$token}";
                 $tokens[$token] = $value;
             }
 
             // Where conditions
             foreach ($where_fields_values as $field => $value) {
                 $token          = ':' . count($tokens);
-                $where[]        = "`{$field}` = {$token}";
+                $where[]        = "{$field} = {$token}";
                 $tokens[$token] = $value;
             }
 
-            $sql = 'UPDATE `' . $table . '` SET ' . implode(', ', $fields);
+            $sql = 'UPDATE ' . $table . ' SET ' . implode(', ', $fields);
             $sql .= count($where) > 0 ? ' WHERE ' . implode(' AND ', $where) : '';
 
             return self::$pdo->prepare($sql)->execute($tokens);

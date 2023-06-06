@@ -127,7 +127,7 @@ class Telegram
      *
      * @var bool
      */
-    protected $mysql_enabled = false;
+    protected $db_enabled = false;
 
     /**
      * PDO object
@@ -227,18 +227,17 @@ class Telegram
     /**
      * Initialize Database connection
      *
-     * @param array  $credentials
+     * @param array $credentials
      * @param string $table_prefix
-     * @param string $encoding
      *
      * @return Telegram
      * @throws TelegramException
      */
-    public function enableMySql(array $credentials, string $table_prefix = '', string $encoding = 'utf8mb4'): Telegram
+    public function enableDb(array $credentials, string $table_prefix = ''): Telegram
     {
-        $this->pdo = DB::initialize($credentials, $this, $table_prefix, $encoding);
+        $this->pdo = DB::initialize($credentials, $this, $table_prefix);
         ConversationDB::initializeConversation();
-        $this->mysql_enabled = true;
+        $this->db_enabled = true;
 
         return $this;
     }
@@ -256,7 +255,7 @@ class Telegram
     {
         $this->pdo = DB::externalInitialize($external_pdo_connection, $this, $table_prefix);
         ConversationDB::initializeConversation();
-        $this->mysql_enabled = true;
+        $this->db_enabled = true;
 
         return $this;
     }
@@ -789,7 +788,7 @@ class Telegram
      */
     public function isDbEnabled(): bool
     {
-        return $this->mysql_enabled;
+        return $this->db_enabled;
     }
 
     /**

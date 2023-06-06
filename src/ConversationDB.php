@@ -46,10 +46,10 @@ class ConversationDB extends DB
         try {
             $sql = '
               SELECT *
-              FROM `' . TB_CONVERSATION . '`
-              WHERE `status` = :status
-                AND `chat_id` = :chat_id
-                AND `user_id` = :user_id
+              FROM ' . TB_CONVERSATION . '
+              WHERE status = :status
+                AND chat_id = :chat_id
+                AND user_id = :user_id
             ';
 
             if ($limit > 0) {
@@ -91,8 +91,8 @@ class ConversationDB extends DB
         }
 
         try {
-            $sth = self::$pdo->prepare('INSERT INTO `' . TB_CONVERSATION . '`
-                (`status`, `user_id`, `chat_id`, `command`, `notes`, `created_at`, `updated_at`)
+            $sth = self::$pdo->prepare('INSERT INTO ' . TB_CONVERSATION . '
+                (status, user_id, chat_id, command, notes, created_at, updated_at)
                 VALUES
                 (:status, :user_id, :chat_id, :command, :notes, :created_at, :updated_at)
             ');

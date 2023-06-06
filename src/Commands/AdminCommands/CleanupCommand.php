@@ -160,55 +160,55 @@ class CleanupCommand extends AdminCommand
 
         if (in_array('telegram_update', $tables_to_clean, true)) {
             $queries[] = sprintf(
-                'DELETE FROM `%3$s`
+                'DELETE FROM %3$s
                 WHERE id IN (
                     SELECT id FROM (
-                        SELECT id FROM `%3$s`
-                        WHERE `id` != \'%1$s\'
-                        AND `chat_id` NOT IN (
-                          SELECT `id`
-                          FROM `%4$s`
-                          WHERE `%3$s`.`chat_id` = `id`
-                          AND `updated_at` < \'%2$s\'
+                        SELECT id FROM %3$s
+                        WHERE id != \'%1$s\'
+                        AND chat_id NOT IN (
+                          SELECT id
+                          FROM %4$s
+                          WHERE %3$s.chat_id = id
+                          AND updated_at < \'%2$s\'
                         )
                         AND (
-                          `message_id` IS NOT NULL
-                          AND `message_id` IN (
-                            SELECT `id`
-                            FROM `%5$s`
-                            WHERE `date` < \'%2$s\'
+                          message_id IS NOT NULL
+                          AND message_id IN (
+                            SELECT id
+                            FROM %5$s
+                            WHERE date < \'%2$s\'
                           )
                         )
                         OR (
-                          `edited_message_id` IS NOT NULL
-                          AND `edited_message_id` IN (
-                            SELECT `id`
-                            FROM `%6$s`
-                            WHERE `edit_date` < \'%2$s\'
+                          edited_message_id IS NOT NULL
+                          AND edited_message_id IN (
+                            SELECT id
+                            FROM %6$s
+                            WHERE edit_date < \'%2$s\'
                           )
                         )
                         OR (
-                          `inline_query_id` IS NOT NULL
-                          AND `inline_query_id` IN (
-                            SELECT `id`
-                            FROM `%7$s`
-                            WHERE `created_at` < \'%2$s\'
+                          inline_query_id IS NOT NULL
+                          AND inline_query_id IN (
+                            SELECT id
+                            FROM %7$s
+                            WHERE created_at < \'%2$s\'
                           )
                         )
                         OR (
-                          `chosen_inline_result_id` IS NOT NULL
-                          AND `chosen_inline_result_id` IN (
-                            SELECT `id`
-                            FROM `%8$s`
-                            WHERE `created_at` < \'%2$s\'
+                          chosen_inline_result_id IS NOT NULL
+                          AND chosen_inline_result_id IN (
+                            SELECT id
+                            FROM %8$s
+                            WHERE created_at < \'%2$s\'
                           )
                         )
                         OR (
-                          `callback_query_id` IS NOT NULL
-                          AND `callback_query_id` IN (
-                            SELECT `id`
-                            FROM `%9$s`
-                            WHERE `created_at` < \'%2$s\'
+                          callback_query_id IS NOT NULL
+                          AND callback_query_id IN (
+                            SELECT id
+                            FROM %9$s
+                            WHERE created_at < \'%2$s\'
                           )
                         )
                     ) a
@@ -228,11 +228,11 @@ class CleanupCommand extends AdminCommand
 
         if (in_array('user_chat', $tables_to_clean, true)) {
             $queries[] = sprintf(
-                'DELETE FROM `%1$s`
-                WHERE `user_id` IN (
-                  SELECT `id`
-                  FROM `%2$s`
-                  WHERE `updated_at` < \'%3$s\'
+                'DELETE FROM %1$s
+                WHERE user_id IN (
+                  SELECT id
+                  FROM %2$s
+                  WHERE updated_at < \'%3$s\'
                 )
             ',
                 TB_USER_CHAT,
@@ -253,8 +253,8 @@ class CleanupCommand extends AdminCommand
 
         foreach (array_intersect(array_keys($simple_tables), $tables_to_clean) as $table_to_clean) {
             $queries[] = sprintf(
-                'DELETE FROM `%1$s`
-                WHERE `%2$s` < \'%3$s\'
+                'DELETE FROM %1$s
+                WHERE %2$s < \'%3$s\'
             ',
                 $simple_tables[$table_to_clean]['table'],
                 $simple_tables[$table_to_clean]['field'],
@@ -270,12 +270,12 @@ class CleanupCommand extends AdminCommand
         ];
         foreach (array_intersect(array_keys($query_tables), $tables_to_clean) as $table_to_clean) {
             $queries[] = sprintf(
-                'DELETE FROM `%1$s`
-                WHERE `%2$s` < \'%3$s\'
-                  AND `id` NOT IN (
-                    SELECT `%4$s`
-                    FROM `%5$s`
-                    WHERE `%4$s` = `%1$s`.`id`
+                'DELETE FROM %1$s
+                WHERE %2$s < \'%3$s\'
+                  AND id NOT IN (
+                    SELECT %4$s
+                    FROM %5$s
+                    WHERE %4$s = %1$s.id
                   )
             ',
                 $query_tables[$table_to_clean]['table'],
@@ -289,12 +289,12 @@ class CleanupCommand extends AdminCommand
         // Messages
         if (in_array('edited_message', $tables_to_clean, true)) {
             $queries[] = sprintf(
-                'DELETE FROM `%1$s`
-                WHERE `edit_date` < \'%2$s\'
-                  AND `id` NOT IN (
-                    SELECT `message_id`
-                    FROM `%3$s`
-                    WHERE `edited_message_id` = `%1$s`.`id`
+                'DELETE FROM %1$s
+                WHERE edit_date < \'%2$s\'
+                  AND id NOT IN (
+                    SELECT message_id
+                    FROM %3$s
+                    WHERE edited_message_id = %1$s.id
                   )
             ',
                 TB_EDITED_MESSAGE,
@@ -305,33 +305,33 @@ class CleanupCommand extends AdminCommand
 
         if (in_array('message', $tables_to_clean, true)) {
             $queries[] = sprintf(
-                'DELETE FROM `%1$s`
+                'DELETE FROM %1$s
                 WHERE id IN (
                     SELECT id
                     FROM (
                         SELECT id
-                        FROM  `%1$s`
-                        WHERE `date` < \'%2$s\'
-                          AND `id` NOT IN (
-                            SELECT `message_id`
-                            FROM `%3$s`
-                            WHERE `message_id` = `%1$s`.`id`
+                        FROM  %1$s
+                        WHERE date < \'%2$s\'
+                          AND id NOT IN (
+                            SELECT message_id
+                            FROM %3$s
+                            WHERE message_id = %1$s.id
                           )
-                          AND `id` NOT IN (
-                            SELECT `message_id`
-                            FROM `%4$s`
-                            WHERE `message_id` = `%1$s`.`id`
+                          AND id NOT IN (
+                            SELECT message_id
+                            FROM %4$s
+                            WHERE message_id = %1$s.id
                           )
-                          AND `id` NOT IN (
-                            SELECT `message_id`
-                            FROM `%5$s`
-                            WHERE `message_id` = `%1$s`.`id`
+                          AND id NOT IN (
+                            SELECT message_id
+                            FROM %5$s
+                            WHERE message_id = %1$s.id
                           )
-                          AND `id` NOT IN (
-                            SELECT a.`reply_to_message` FROM `%1$s` a
-                            INNER JOIN `%1$s` b ON b.`id` = a.`reply_to_message` AND b.`chat_id` = a.`reply_to_chat`
+                          AND id NOT IN (
+                            SELECT a.reply_to_message FROM %1$s a
+                            INNER JOIN %1$s b ON b.id = a.reply_to_message AND b.chat_id = a.reply_to_chat
                           )
-                        ORDER BY `id` DESC
+                        ORDER BY id DESC
                      ) a
                  )
             ',
