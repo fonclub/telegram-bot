@@ -357,7 +357,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_TELEGRAM_UPDATE . '
+                INSERT INTO ' . TB_TELEGRAM_UPDATE . '
                 (
                     id, chat_id, message_id, edited_message_id,
                     channel_post_id, edited_channel_post_id, inline_query_id, chosen_inline_result_id,
@@ -450,7 +450,7 @@ class DB
         if ($chat) {
             try {
                 $sth = self::$pdo->prepare('
-                    INSERT IGNORE INTO ' . TB_USER_CHAT . '
+                    INSERT INTO ' . TB_USER_CHAT . '
                     (user_id, chat_id)
                     VALUES
                     (:user_id, :chat_id)
@@ -486,7 +486,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_CHAT . '
+                INSERT INTO ' . TB_CHAT . '
                 (id, type, title, username, first_name, last_name, is_forum, created_at ,updated_at, old_id)
                 VALUES
                 (:id, :type, :title, :username, :first_name, :last_name, :is_forum, :created_at, :updated_at, :old_id)
@@ -633,7 +633,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_INLINE_QUERY . '
+                INSERT INTO ' . TB_INLINE_QUERY . '
                 (id, user_id, location, query, offset, chat_type, created_at)
                 VALUES
                 (:id, :user_id, :location, :query, :offset, :chat_type, :created_at)
@@ -720,7 +720,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_CALLBACK_QUERY . '
+                INSERT INTO ' . TB_CALLBACK_QUERY . '
                 (id, user_id, chat_id, message_id, inline_message_id, chat_instance, data, game_short_name, created_at)
                 VALUES
                 (:id, :user_id, :chat_id, :message_id, :inline_message_id, :chat_instance, :data, :game_short_name, :created_at)
@@ -787,7 +787,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_SHIPPING_QUERY . '
+                INSERT INTO ' . TB_SHIPPING_QUERY . '
                 (id, user_id, invoice_payload, shipping_address, created_at)
                 VALUES
                 (:id, :user_id, :invoice_payload, :shipping_address, :created_at)
@@ -829,7 +829,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_PRE_CHECKOUT_QUERY . '
+                INSERT INTO ' . TB_PRE_CHECKOUT_QUERY . '
                 (id, user_id, currency, total_amount, invoice_payload, shipping_option_id, order_info, created_at)
                 VALUES
                 (:id, :user_id, :currency, :total_amount, :invoice_payload, :shipping_option_id, :order_info, :created_at)
@@ -1125,7 +1125,7 @@ class DB
 
         try {
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_MESSAGE . '
+                INSERT INTO ' . TB_MESSAGE . '
                 (
                     id, user_id, chat_id, message_thread_id, sender_chat_id, date, forward_from, forward_from_chat, forward_from_message_id,
                     forward_signature, forward_sender_name, forward_date, is_topic_message,
@@ -1272,7 +1272,7 @@ class DB
             }
 
             $sth = self::$pdo->prepare('
-                INSERT IGNORE INTO ' . TB_EDITED_MESSAGE . '
+                INSERT INTO ' . TB_EDITED_MESSAGE . '
                 (chat_id, message_id, user_id, edit_date, text, entities, caption)
                 VALUES
                 (:chat_id, :message_id, :user_id, :edit_date, :text, :entities, :caption)
